@@ -168,20 +168,20 @@ func initStandardRegistry(config *types.Prometheus) Registry {
 		serviceReqs := newCounterFrom(promState.collectors, stdprometheus.CounterOpts{
 			Name: serviceReqsTotalName,
 			Help: "How many HTTP requests processed on a service, partitioned by status code, protocol, and method.",
-		}, []string{"code", "method", "protocol", "service"})
+		}, []string{"code", "method", "protocol", "service", "service_name", "service_namespace"})
 		serviceReqsTLS := newCounterFrom(promState.collectors, stdprometheus.CounterOpts{
 			Name: serviceReqsTLSTotalName,
 			Help: "How many HTTP requests with TLS processed on a service, partitioned by TLS version and TLS cipher.",
-		}, []string{"tls_version", "tls_cipher", "service"})
+		}, []string{"tls_version", "tls_cipher", "service", "service_name", "service_namespace"})
 		serviceReqDurations := newHistogramFrom(promState.collectors, stdprometheus.HistogramOpts{
 			Name:    serviceReqDurationName,
 			Help:    "How long it took to process the request on a service, partitioned by status code, protocol, and method.",
 			Buckets: buckets,
-		}, []string{"code", "method", "protocol", "service"})
+		}, []string{"code", "method", "protocol", "service", "service_name", "service_namespace"})
 		serviceOpenConns := newGaugeFrom(promState.collectors, stdprometheus.GaugeOpts{
 			Name: serviceOpenConnsName,
 			Help: "How many open connections exist on a service, partitioned by method and protocol.",
-		}, []string{"method", "protocol", "service"})
+		}, []string{"method", "protocol", "service", "service_name", "service_namespace"})
 		serviceRetries := newCounterFrom(promState.collectors, stdprometheus.CounterOpts{
 			Name: serviceRetriesTotalName,
 			Help: "How many request retries happened on a service.",

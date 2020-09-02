@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"crypto/tls"
+	"github.com/containous/traefik/v2/pkg/provider/kubernetes/crd"
 	"net/http"
 	"strconv"
 	"strings"
@@ -54,13 +55,15 @@ func NewEntryPointMiddleware(ctx context.Context, next http.Handler, registry me
 func NewServiceMiddleware(ctx context.Context, next http.Handler, registry metrics.Registry, serviceName string) http.Handler {
 	log.FromContext(middlewares.GetLoggerCtx(ctx, nameService, typeName)).Debug("Creating middleware")
 
+	svc := crd.GetK8sService(serviceName)
+
 	return &metricsMiddleware{
 		next:                 next,
 		reqsCounter:          registry.ServiceReqsCounter(),
 		reqsTLSCounter:       registry.ServiceReqsTLSCounter(),
 		reqDurationHistogram: registry.ServiceReqDurationHistogram(),
 		openConnsGauge:       registry.ServiceOpenConnsGauge(),
-		baseLabels:           []string{"service", serviceName},
+		baseLabels:           []string{"service", serviceName, "service_name", svc.ServiceName, "service_namespace", svc.ServiceNamespace},
 	}
 }
 

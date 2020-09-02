@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/containous/traefik/v2/pkg/config/dynamic"
 	"github.com/containous/traefik/v2/pkg/log"
@@ -19,6 +20,26 @@ const (
 	httpsProtocol      = "https"
 	httpProtocol       = "http"
 )
+
+var serviceMap sync.Map
+
+type K8sService struct {
+	ServiceName      string
+	ServiceNamespace string
+}
+
+func PutK8sService(key string, svc *K8sService) {
+	serviceMap.Store(key, svc)
+}
+
+func GetK8sService(key string) *K8sService {
+	svc, ok := serviceMap.Load(key)
+	if ok {
+		svc := svc.(*K8sService)
+		return svc
+	}
+	return &K8sService{}
+}
 
 func (p *Provider) loadIngressRouteConfiguration(ctx context.Context, client Client, tlsConfigs map[string]*tls.CertAndStores) *dynamic.HTTPConfiguration {
 	conf := &dynamic.HTTPConfiguration{
@@ -119,6 +140,7 @@ func (p *Provider) loadIngressRouteConfiguration(ctx context.Context, client Cli
 				Rule:        route.Match,
 				Service:     serviceName,
 			}
+			PutK8sService(normalized+"@kubernetescrd", &K8sService{route.Services[0].LoadBalancerSpec.Name, ingressRoute.Namespace})
 
 			if ingressRoute.Spec.TLS != nil {
 				tlsConf := &dynamic.RouterTLSConfig{
